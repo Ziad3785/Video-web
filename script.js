@@ -1,116 +1,127 @@
-{
-    title: "xnxx video ",
-    desc: "وصف الفيديو.",
-    url: "https://www.pornhub.com/embed/ph5ac81eabe203d",
-    category: "إباحي",
-    tags: "إباحي | hot"
-}========================
-function loadVideos() {
-  fetch('videos.json')
-    .then(res => {
-      if (!res.ok) {
-        throw new Error('فشل في جلب videos.json');
-      }
-      return res.json();
-    })
-    .then(videos => {
-      videosData = videos;
-      displayVideos(videosData);
-      setupSearch(); 
-    })
-    .catch(error => {
-      console.error('حدث خطأ أثناء تحميل الفيديوهات:', error);
-      const container = document.getElementById("videoContainer");
-      container.innerHTML = `<p style="color: red; text-align: center; margin-top: 50px;">
-          عفواً، فشل تحميل قائمة الفيديوهات.
-      </p>`;
+// ===========================
+// ملف JS كامل للفيديوهات
+// ===========================
+
+// قائمة الفيديوهات (كمثال 5 فيديوهات، ممكن تضيف 100 فيديو بنفس النمط)
+const videoLibrary = [
+    {
+        id: 1,
+        title: "Stepson fulfills his fantasy after the hotel makes a mistake and he shares a bed with his stepmother",
+        desc: "تريند stepmom رقم 1 في 2025 - ملايين المشاهدات",
+        url: "https://www.pornhub.com/embed/6924cbb6475f0",
+        tags: "stepmom | milf | hotel | fantasy",
+        thumb: "https://via.placeholder.com/400x300?text=Hotel+Stepmom+Fantasy"
+    },
+    {
+        id: 2,
+        title: "piano teacher's passion towards the japanese student ended in huge cumshot",
+        desc: "تريند teacher/student ساخن",
+        url: "https://www.pornhub.com/embed/692ce2faf27ff",
+        tags: "teacher | student | japanese | cumshot",
+        thumb: "https://via.placeholder.com/400x300?text=Piano+Teacher+Cumshot"
+    },
+    {
+        id: 3,
+        title: "Big-bootied MILF stepmother rides her stepson's cock in the bathtub",
+        desc: "Big ass milf trending 2025",
+        url: "https://www.pornhub.com/embed/69436879494a1",
+        tags: "milf | big ass | bathtub",
+        thumb: "https://via.placeholder.com/400x300?text=Big+Ass+Bathtub+Ride"
+    },
+    {
+        id: 4,
+        title: "Hottest couple in 2025 on PORNHUB. Amazing SEX",
+        desc: "أحلى couple في 2025",
+        url: "https://www.pornhub.com/embed/67b4b124517f9",
+        tags: "couple | amateur | hot",
+        thumb: "https://via.placeholder.com/400x300?text=Hottest+Couple+2025"
+    },
+    {
+        id: 5,
+        title: "Busty Big Step Sister Teaches New Lessons ~ Household Fantasy ~ Scott Stark",
+        desc: "Busty stepsister fantasy",
+        url: "https://www.pornhub.com/embed/694835b029c34",
+        tags: "busty | stepsister | big tits",
+        thumb: "https://via.placeholder.com/400x300?text=Busty+Stepsister+Lessons"
+    }
+];
+
+// ===========================
+// عرض الشبكة
+// ===========================
+function renderGrid() {
+    const grid = document.getElementById('videoGrid');
+    grid.innerHTML = '';
+
+    videoLibrary.forEach(video => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <img src="${video.thumb}" alt="${video.title}">
+            <div class="info">
+                <h3>${video.title}</h3>
+                <span>${video.tags}</span>
+            </div>
+        `;
+        card.addEventListener('click', () => playVideo(video.id));
+        grid.appendChild(card);
     });
 }
 
-// ==========================================================
-// 2. وظيفة عرض الفيديوهات (Display Videos)
-// ==========================================================
-function displayVideos(videos) {
-  const container = document.getElementById("videoContainer");
-  container.innerHTML = ""; 
+// ===========================
+// تشغيل الفيديو
+// ===========================
+function playVideo(id) {
+    const video = videoLibrary.find(v => v.id === id);
+    if (!video) return;
 
-  if (videos.length === 0) {
-    container.innerHTML = `<p style="text-align: center; margin-top: 20px;">ما فيش فيديوهات تطابق بحثك.</p>`;
-    return;
-  }
+    document.getElementById('homePage').style.display = 'none';
+    const player = document.getElementById('player');
+    player.style.display = 'block';
 
-  videos.forEach(video => {
-    container.innerHTML += `
-      <div class="video-card">
-        <h3>${video.title}</h3>
-        
-        <img src="${video.thumbnail}" alt="${video.title}" 
-             onerror="this.onerror=null;this.src='[Placeholder image URL]';" />
-        
-        <video width="100%" height="250" controls preload="metadata">
-            <source src="${video.id}" type="video/mp4">
-            متصفحك لا يدعم وسم الفيديو.
-        </video>
-      </div>
-    `;
-  });
+    document.getElementById('videoFrame').src = video.url;
+    document.getElementById('videoTitle').textContent = video.title;
+    document.getElementById('videoDesc').textContent = video.desc;
+    document.getElementById('videoTags').textContent = video.tags;
+
+    renderRecs(id);
 }
 
-// ==========================================================
-// 3. تهيئة وظيفة البحث (Setup Search)
-// ==========================================================
-function setupSearch() {
-  const searchInput = document.getElementById('searchInput');
-  
-  if (searchInput) {
-    searchInput.addEventListener('input', function() {
-      const query = this.value.trim().toLowerCase();
-      
-      const filtered = videosData.filter(video => 
-          video.title.toLowerCase().includes(query)
-      );
-      
-      displayVideos(filtered);
-    });
-  }
+// ===========================
+// عرض المقترحات
+// ===========================
+function renderRecs(currentId) {
+    const recList = document.getElementById('recList');
+    recList.innerHTML = '';
+
+    videoLibrary
+        .filter(v => v.id !== currentId)
+        .slice(0, 4) // عرض 4 مقترحات
+        .forEach(video => {
+            const item = document.createElement('div');
+            item.className = 'rec-item';
+            item.innerHTML = `
+                <img src="${video.thumb}" alt="${video.title}">
+                <div>
+                    <h4>${video.title}</h4>
+                    <span>${video.tags}</span>
+                </div>
+            `;
+            item.addEventListener('click', () => playVideo(video.id));
+            recList.appendChild(item);
+        });
 }
 
-// تشغيل البرنامج
-loadVideos();
-.filter(video => 
-          video.title.toLowerCase().includes(query)
-      );
-      
-      displayVideos(filtered);
-    });
-  }
+// ===========================
+// الرجوع للصفحة الرئيسية
+// ===========================
+function goHome() {
+    document.getElementById('player').style.display = 'none';
+    document.getElementById('homePage').style.display = 'block';
+    document.getElementById('videoFrame').src = '';
 }
 
-// تشغيل البرنامج
-loadVideos();
-im().toLowerCase();
-      
-      // إذا كان حقل البحث فارغاً، اعرض كل الفيديوهات
-      if (query === '') {
-          displayVideos(videosData);
-          return;
-      }
-      
-      // تصفية البيانات
-      const filtered = videosData.filter(video => 
-          video.title.toLowerCase().includes(query)
-      );
-      
-      // عرض النتائج المفلترة
-      displayVideos(filtered);
-    });
-  } else {
-    console.warn("عنصر البحث (ID: searchInput) غير موجود في ملف index.html.");
-  }
-}
-
-// ==========================================================
-// 4. تشغيل البرنامج
-// ==========================================================
-// بدء تحميل الفيديوهات عند تحميل الصفحة
-loadVideos();
+// ===========================
+// تشغيل العرض عند تحميل الصفحة
+// ===========================
+document.addEventListener('DOMContentLoaded', renderGrid);
